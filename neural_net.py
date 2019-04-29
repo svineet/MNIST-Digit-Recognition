@@ -30,8 +30,8 @@ class TwoLayerNet:
 
         # Dropout after layer 1
         # Kill whole neurons
-        drop1 = np.random.randn(scores.shape)
-        relu_activations[:, drop1 <= self.dropout_p] = 0
+        # drop1 = np.random.randn(scores.shape)
+        # relu_activations[:, drop1 <= self.dropout_p] = 0
 
         # Layer 2
         scores = relu_activations.dot(W2)+b2
