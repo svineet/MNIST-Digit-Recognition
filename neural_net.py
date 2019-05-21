@@ -4,14 +4,12 @@ from activation_functions import ReLU, grad_ReLU, softmax, grad_softmax
 
 
 class TwoLayerNet:
-    def __init__(self, input_size, hidden_size ,output_size, dropout_p, std=1e-4):
+    def __init__(self, input_size, hidden_size ,output_size, std=1e-4):
         self.params = {}
         self.params['W1'] = std * np.random.randn(input_size, hidden_size)
         self.params['b1'] = np.zeros(hidden_size)
         self.params['W2'] = std * np.random.randn(hidden_size, output_size)
         self.params['b2'] = np.zeros(output_size)
-
-        self.dropout_p = dropout_p
 
     def loss(self, X, y=None, reg=0.0):
         W1, b1 = self.params['W1'], self.params['b1']
@@ -73,6 +71,9 @@ class TwoLayerNet:
 
         db1 = drelu*1
         grads['db1'] = np.sum(db1, axis=0)
+
+        dimage = drelu.dot(W1.T)
+        grads['dimage'] = dimage
 
         return loss, grads
 
@@ -150,5 +151,50 @@ class TwoLayerNet:
           'loss_history': loss_history,
           'train_acc_history': train_acc_history,
           'val_acc_history': val_acc_history,
+        }
+
+    def fuck_the_image(self, image, y_intended,
+            learning_rate=1e-3, learning_rate_decay=0.95,
+            reg=5e-6, num_iters=100,
+            batch_size=1, verbose=False):
+        # image: (784, )
+        # y_intended: [ thing_wanted ] i.e (1, )
+
+        iterations_per_epoch = max(1 / batch_size, 1)
+
+        # Use SGD to optimize the parameters in self.model
+        loss_history = []
+        train_acc_history = []
+
+
+        for it in range(num_iters):
+            # Compute loss and gradients using the current minibatch
+            # No regularization becuase it is rarted to regularize when
+            # ARENT EVEN FUCKING LEARNING THE WEIGHTS
+            loss, grads = self.loss(image[None, :], y=y_intended, reg=0)
+            loss_history.append(loss)
+
+            # self.params['W1'] -= learning_rate*grads['dW1']
+            # self.params['W2'] -= learning_rate*grads['dW2']
+            # self.params['b1'] -= learning_rate*grads['db1']
+            # self.params['b2'] -= learning_rate*grads['db2']
+
+            # the final step of the dance
+            # deduct dimage from the 
+            # Take the zeroth gradient because grad['dimage'] will be of
+            # (N, 784) size where N here is set to 1
+            image -= learning_rate*grads['dimage'][0]
+ 
+            if verbose and it % 100 == 0:
+                print('iteration %d / %d: loss %f' % (it, num_iters, loss))
+
+            # Delay alpha every epoch
+            if it % iterations_per_epoch == 0:
+                # Decay learning rate
+                learning_rate *= learning_rate_decay
+
+        return {
+          'loss_history': loss_history,
+          'train_acc_history': train_acc_history,
         }
 
