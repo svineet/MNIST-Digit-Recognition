@@ -169,8 +169,7 @@ class TwoLayerNet:
 
         for it in range(num_iters):
             # Compute loss and gradients using the current minibatch
-            # No regularization becuase it is rarted to regularize when
-            # ARENT EVEN FUCKING LEARNING THE WEIGHTS
+            # No regularization becuase it is rarted to regularize
             loss, grads = self.loss(image[None, :], y=y_intended, reg=0)
             loss_history.append(loss)
 
